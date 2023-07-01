@@ -102,7 +102,41 @@ describe('Token', () => {
             await expect(dao.connect(investor1).createProposal('Proposal 1', ether(1000), recipient.address)).to.be.reverted
         })
         it('rejects proposal for non-token-holders', async () =>{
-            await expect(dao.connect(user).createProposal('Proposal 2', ether(100), recipient.address)).to.be.revertedWith('Must be a token holder to make a proposal')
+            await expect(dao.connect(user).createProposal('Proposal 2', ether(100), recipient.address)).to.be.revertedWith('Must be a token holder')
+        })
+    })
+
+  })
+
+  describe('Voting', () => {
+    let transaction
+    beforeEach(async () => {
+        transaction = await dao.connect(investor1).createProposal('Proposal 1', ether(100), recipient.address)
+        result = transaction.wait()
+    })
+    describe('Success', () => {
+        beforeEach(async () => {
+            transaction = await dao.connect(investor1).vote(1)
+            result = transaction.wait()
+        })
+        it('updates the vote count', async () =>{
+            const proposal = await dao.proposals(1)
+            expect(proposal.votes).to.equal(tokens(200000))
+        })
+        it('emits a vote event', async () =>{
+            await expect(transaction).to.emit(dao, 'Vote')
+                .withArgs(1, investor1.address)
+        })
+
+    })
+  
+    describe('Failures', () => {
+        it('rejects votes for non-token-holders', async () =>{
+            await expect(dao.connect(user).vote(1)).to.be.revertedWith('Must be a token holder')
+        })
+        it('rejects double voting', async () =>{
+            await dao.connect(investor1).vote(1)
+            await expect(dao.connect(investor1).vote(1)).to.be.revertedWith('Already voted')
         })
     })
 
