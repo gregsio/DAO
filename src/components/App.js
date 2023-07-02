@@ -5,6 +5,7 @@ import { ethers } from 'ethers'
 // Components
 import Navigation from './Navigation';
 import Loading from './Loading';
+import Proposals from './Proposals'
 
 // ABIs: Import your contract ABIs here
  import DAO_ABI from '../abis/DAO.json'
@@ -13,14 +14,20 @@ import Loading from './Loading';
  import config from '../config.json';
 
 function App() {
+
+  const [provider, setProvider] = useState(null)
   const [account, setAccount] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [dao, setDao] = useState(null)
   const [treasuryBalance, setTreasuryBalance] = useState(0)
 
+  const [proposals, setProposals] = useState(null)
+  const [quorum, setQuorum] = useState(null)
+
   const loadBlockchainData = async () => {
     // Initiate provider
     const provider = new ethers.providers.Web3Provider(window.ethereum)
+    setProvider(provider)
 
     // Fetch accounts
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
@@ -38,6 +45,19 @@ function App() {
     treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
     setTreasuryBalance(treasuryBalance)
 
+    //Fetch proposals count
+    const count = await dao.proposalCount()
+    const items = []
+    for(var i=1; i <= count; i++){
+        //Fetch proposals
+      const proposal = await dao.proposals(i)
+      items.push(proposal)
+    }
+    setProposals(items)
+
+    // fetch quorum
+    setQuorum(await dao.quorum())
+
     setIsLoading(false)
   }
 
@@ -51,7 +71,7 @@ function App() {
     <Container>
       <Navigation account={account} />
 
-      <h1 className='my-4 text-center'>Welcom to our DAO</h1>
+      <h1 className='my-4 text-center'>Welcome to our DAO</h1>
 
       {isLoading ? (
         <Loading />
@@ -60,6 +80,7 @@ function App() {
           <hr/>
           <p className='text-center'><strong>Treasury Balance:</strong> {treasuryBalance} ETH</p>
           <hr/>
+          <Proposals provider={provider} dao={dao} proposals={proposals} quorum={quorum} setIsLoading={setIsLoading}  />
         </>
       )}
     </Container>
