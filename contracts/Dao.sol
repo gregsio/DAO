@@ -9,7 +9,6 @@ contract DAO {
     Token public token;
     uint256 public quorum;
 
-
     struct Proposal {
         uint id;
         string name;
@@ -35,6 +34,10 @@ contract DAO {
         address investor
     );
 
+    event Finalize(
+        uint id
+    );
+
     constructor(Token _token, uint256 _quorum) {
         owner = msg.sender;
         token = _token;
@@ -55,9 +58,9 @@ contract DAO {
         uint256 _amount,
         address payable _recipient
     ) external onlyInvestor {
+
         require(address(this).balance >= _amount);
         proposalCount++;
-
         proposals[proposalCount] = Proposal(
             proposalCount,
             _name,
@@ -66,21 +69,49 @@ contract DAO {
             0,
             false
         );
-
         emit Propose(proposalCount, _amount, _recipient, msg.sender);
     }
 
     function vote(uint256 _id) external onlyInvestor{
+        
+        // Unsure voters can vote only once
         require(!votes[msg.sender][_id], 'Already voted');
-        // fetch proposal
+
+        // Fetch proposal
        Proposal storage proposal = proposals[_id];
-        // update votes
+        
+        // Update votes
         proposal.votes += token.balanceOf(msg.sender); //wheighted votes
-        // track that user has voted
+        
+        // Track that user has voted
         votes[msg.sender][_id] = true;
-        // emit an event
+        
+        // Emit an event
         emit Vote(_id, msg.sender);
     }
 
-}
+    function finalizeProposal(uint _id) external onlyInvestor{
 
+        // Fetch proposal
+        Proposal storage proposal = proposals[_id];
+
+        // Ensure proposal is not already finalized
+        require(!proposal.finalized,'Proposal already finalized');
+
+        // Mark proposal as finalized
+        proposal.finalized = true;
+
+        // Check proposal has enough votes
+        require(proposal.votes >= quorum, 'Proposal must reach a quorum of votes');
+
+        // Check that contract has enough ether
+        require(address(this).balance >= proposal.amount);
+
+        // Transfer the funds to recipient
+        (bool sent, ) = proposal.recipient.call{value: proposal.amount}("");
+        require(sent);
+
+        // emit event
+        emit Finalize(_id);
+    }
+}
