@@ -7,16 +7,16 @@ import Navigation from './Navigation';
 import Loading from './Loading';
 
 // ABIs: Import your contract ABIs here
-// import TOKEN_ABI from '../abis/Token.json'
+ import DAO_ABI from '../abis/DAO.json'
 
 // Config: Import your network config here
-// import config from '../config.json';
+ import config from '../config.json';
 
 function App() {
   const [account, setAccount] = useState(null)
-  const [balance, setBalance] = useState(0)
-
   const [isLoading, setIsLoading] = useState(true)
+  const [dao, setDao] = useState(null)
+  const [treasuryBalance, setTreasuryBalance] = useState(0)
 
   const loadBlockchainData = async () => {
     // Initiate provider
@@ -27,10 +27,16 @@ function App() {
     const account = ethers.utils.getAddress(accounts[0])
     setAccount(account)
 
-    // Fetch account balance
-    let balance = await provider.getBalance(account)
-    balance = ethers.utils.formatUnits(balance, 18)
-    setBalance(balance)
+    // Load DAO contract
+    //const chainID = provider.getNetwork
+    const { chainId } = await provider.getNetwork()
+    const dao = new ethers.Contract(config[chainId].dao.address, DAO_ABI, provider)
+    setDao(dao)
+
+    //Fetch treasury balance
+    let treasuryBalance = await provider.getBalance(dao.address)
+    treasuryBalance = ethers.utils.formatUnits(treasuryBalance, 18)
+    setTreasuryBalance(treasuryBalance)
 
     setIsLoading(false)
   }
@@ -45,14 +51,15 @@ function App() {
     <Container>
       <Navigation account={account} />
 
-      <h1 className='my-4 text-center'>React Hardhat Template</h1>
+      <h1 className='my-4 text-center'>Welcom to our DAO</h1>
 
       {isLoading ? (
         <Loading />
       ) : (
         <>
-          <p className='text-center'><strong>Your ETH Balance:</strong> {balance} ETH</p>
-          <p className='text-center'>Edit App.js to add your code here.</p>
+          <hr/>
+          <p className='text-center'><strong>Treasury Balance:</strong> {treasuryBalance} ETH</p>
+          <hr/>
         </>
       )}
     </Container>
