@@ -60,6 +60,7 @@ contract DAO {
     ) external onlyInvestor {
 
         require(address(this).balance >= _amount);
+        require(bytes(_name).length > 0,'Proposal must have a description');
         proposalCount++;
         proposals[proposalCount] = Proposal(
             proposalCount,

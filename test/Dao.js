@@ -84,6 +84,7 @@ describe('DAO', () => {
             expect(proposal.amount).to.equal(ether(100))
             expect(proposal.recipient).to.equal(recipient.address)
         })
+
         it('emits a propose event', async () =>{
             await expect(transaction).to.emit(dao, 'Propose').withArgs(1, ether(100), recipient.address, investor1.address)
         })
@@ -96,6 +97,9 @@ describe('DAO', () => {
         it('rejects proposal for non-token-holders', async () =>{
             await expect(dao.connect(user).createProposal('Proposal 2', ether(100), recipient.address)).to.be.revertedWith('Must be a token holder')
         })
+        it('rejects empty proposal names', async () =>{
+          await expect(dao.connect(investor1).createProposal('', ether(100), recipient.address)).to.be.revertedWith('Proposal must have a description')
+      })
     })
 
   })
