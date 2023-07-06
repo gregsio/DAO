@@ -90,6 +90,24 @@ contract DAO {
         emit Vote(_id, msg.sender);
     }
 
+    function downvote(uint256 _id) external onlyInvestor{
+        
+        // Unsure voters can vote only once
+        require(!votes[msg.sender][_id], 'Already voted');
+
+        // Fetch proposal
+       Proposal storage proposal = proposals[_id];
+        
+        // Update votes
+        proposal.votes -= token.balanceOf(msg.sender); //wheighted votes
+        
+        // Track that user has voted
+        votes[msg.sender][_id] = true;
+        
+        // Emit an event
+        emit Vote(_id, msg.sender);
+    }
+
     function finalizeProposal(uint _id) external onlyInvestor{
 
         // Fetch proposal
