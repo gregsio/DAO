@@ -4,11 +4,14 @@ import { ethers } from 'ethers'
 
 const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
 
-    const voteHandler = async (_id) => {
+    const voteHandler = async (_id, approve = true) => {
         try{
             const signer = await provider.getSigner()
-            const transaction = await dao.connect(signer).vote(_id)
-            await transaction.wait()
+            const transaction = approve?
+              await dao.connect(signer).vote(_id):
+              await dao.connect(signer).downvote(_id)
+            
+              await transaction.wait()
         } catch{
             window.alert('User rejected or transaction reverted')
         }
@@ -42,7 +45,7 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
       </thead>
       <tbody>
         {proposals.map((proposal, index) => (
-          <tr key={index}>
+          <tr key={index} className='text-center' style={{padding: '1em'}}>
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
             <td>{proposal.recipient}</td>
@@ -50,16 +53,26 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
             <td>{proposal.votes.toString()}</td>
             <td>
-              {!proposal.finalized && (
-                <Button
-                  variant="primary"
-                  style={{ width: '100%' }}
-                  onClick={ () => {voteHandler(proposal.id)}}
-                >
-                  Vote
-                </Button>
-              )}
-            </td>
+                {!proposal.finalized && (
+                  <Button
+                    variant="success"
+                    style={{ margin: '0.1em' }}
+                    onClick={ () => {voteHandler(proposal.id)}}
+                  >
+                    Approve
+                  </Button>
+                )}
+              
+                {!proposal.finalized && (
+                  <Button
+                    variant="danger"
+                    style={{ margin: '0.1em'}}
+                    onClick={ () => {voteHandler(proposal.id, false)}}
+                  >
+                    Reject
+                  </Button>
+                )}
+           </td>
             <td>
               {!proposal.finalized && proposal.votes >= quorum && (
                 <Button
