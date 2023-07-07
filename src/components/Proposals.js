@@ -2,6 +2,10 @@ import Table from 'react-bootstrap/Table'
 import Button from 'react-bootstrap/Button'
 import { ethers } from 'ethers'
 
+import done from '../img/done-25.png';
+import Progress from './Progress';
+
+
 const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
 
     const voteHandler = async (_id, approve = true) => {
@@ -39,19 +43,22 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
           <th>Amount</th>
           <th>Status</th>
           <th>Total Votes</th>
+          <th>Quorum</th>
           <th>Cast Vote</th>
           <th>Finalize</th>
         </tr>
       </thead>
       <tbody>
         {proposals.map((proposal, index) => (
-          <tr key={index} className='text-center' style={{padding: '1em'}}>
+          <tr key={index} className='text-center ' style={{padding: '1em'}}>
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
             <td>{proposal.recipient}</td>
             <td>{ethers.utils.formatUnits(proposal.amount, "ether")} ETH</td>
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
             <td>{proposal.votes.toString()}</td>
+            <td><Progress votes={proposal.votes} quorum={quorum}  /></td>
+
             <td>
                 {!proposal.finalized && (
                   <Button
@@ -82,6 +89,9 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
                 >
                   Finalize
                 </Button>
+              )}
+              {proposal.finalized && (
+                  <img src={done} alt='finalized'/>
               )}
             </td>
           </tr>
