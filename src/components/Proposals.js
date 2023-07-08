@@ -6,7 +6,7 @@ import done from '../img/done-25.png';
 import Progress from './Progress';
 
 
-const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
+const Proposals = ({provider, dao, proposals, quorum, votes, setIsLoading}) => {
 
     const voteHandler = async (_id, approve = true) => {
         try{
@@ -60,7 +60,7 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
             <td><Progress votes={proposal.votes} quorum={quorum}  /></td>
 
             <td>
-                {!proposal.finalized && (
+                {!proposal.finalized && !votes[index] && (
                   <Button
                     variant="success"
                     style={{ margin: '0.1em' }}
@@ -70,7 +70,7 @@ const Proposals = ({provider, dao, proposals, quorum, setIsLoading}) => {
                   </Button>
                 )}
               
-                {!proposal.finalized && (
+                {!proposal.finalized && !votes[index] &&  (
                   <Button
                     variant="danger"
                     style={{ margin: '0.1em'}}

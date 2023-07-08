@@ -14,6 +14,8 @@ import Proposals from './Proposals';
 // Config: Import your network config here
  import config from '../config.json';
 
+
+
 function App() {
 
   const [provider, setProvider] = useState(null)
@@ -24,6 +26,7 @@ function App() {
 
   const [proposals, setProposals] = useState(null)
   const [quorum, setQuorum] = useState(null)
+  const [votes, setVotes] = useState(null)
 
   const loadBlockchainData = async () => {
     // Initiate provider
@@ -49,16 +52,22 @@ function App() {
     //Fetch proposals count
     const count = await dao.proposalCount()
     const items = []
+    const votes = []
     for(var i=1; i <= count; i++){
-        //Fetch proposals
+      //Fetch proposals
       const proposal = await dao.proposals(i)
+
+      //Fetch votes
+      const vote = await dao.votes(account,i)
+
+      votes.push(vote)
       items.push(proposal)
     }
     setProposals(items)
+    setVotes(votes)
 
     // fetch quorum
     setQuorum(await dao.quorum())
-
     setIsLoading(false)
   }
 
@@ -82,7 +91,7 @@ function App() {
           <hr/>
           <p className='text-center'><strong>Treasury Balance:</strong> {treasuryBalance} ETH</p>
           <hr/>
-          <Proposals provider={provider} dao={dao} proposals={proposals} quorum={quorum} setIsLoading={setIsLoading}  />
+          <Proposals provider={provider} dao={dao} proposals={proposals} quorum={quorum} votes={votes} setIsLoading={setIsLoading}  />
         </>
       )}
     </Container>

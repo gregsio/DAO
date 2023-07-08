@@ -20,7 +20,7 @@ contract DAO {
 
     uint256 public proposalCount;
     mapping (uint => Proposal) public proposals;
-    mapping(address voter => mapping(uint256 => bool)) votes;
+    mapping(address voter => mapping(uint256 => bool)) public votes;
 
     event Propose(
         uint id,
