@@ -5,8 +5,7 @@ import { ethers } from 'ethers'
 import done from '../img/done-25.png';
 import Progress from './Progress';
 
-
-const Proposals = ({provider, dao, proposals, quorum, votes, setIsLoading}) => {
+const Proposals = ({provider, dao, proposals, quorum, votes, recipientBalance, setIsLoading}) => {
 
     const voteHandler = async (_id, approve = true) => {
         try{
@@ -39,7 +38,7 @@ const Proposals = ({provider, dao, proposals, quorum, votes, setIsLoading}) => {
         <tr>
           <th>#</th>
           <th>Proposal Name</th>
-          <th>Recipient Address</th>
+          <th>Recipient Address / Balance</th>
           <th>Amount</th>
           <th>Status</th>
           <th>Total Votes</th>
@@ -50,10 +49,10 @@ const Proposals = ({provider, dao, proposals, quorum, votes, setIsLoading}) => {
       </thead>
       <tbody>
         {proposals.map((proposal, index) => (
-          <tr key={index} className='text-center ' style={{padding: '1em'}}>
+          <tr key={index} className='text-center' style={{padding: '1em'}}>
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
-            <td>{proposal.recipient}</td>
+            <td>{proposal.recipient} ({recipientBalance.get(proposal.recipient).toString()} ETH)</td>
             <td>{ethers.utils.formatUnits(proposal.amount, "ether")} ETH</td>
             <td>{proposal.finalized ? 'Approved' : 'In Progress'}</td>
             <td>{proposal.votes.toString()}</td>

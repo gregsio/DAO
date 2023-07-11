@@ -27,6 +27,8 @@ function App() {
   const [proposals, setProposals] = useState(null)
   const [quorum, setQuorum] = useState(null)
   const [votes, setVotes] = useState(null)
+  const [recipientsBalance, setRecipientsBalance] = useState({})
+
 
   const loadBlockchainData = async () => {
     // Initiate provider
@@ -53,16 +55,28 @@ function App() {
     const count = await dao.proposalCount()
     const items = []
     const votes = []
+    let recipientsBalance = new Map([])
+
     for(var i=1; i <= count; i++){
       //Fetch proposals
       const proposal = await dao.proposals(i)
+      items.push(proposal)
 
       //Fetch votes
       const vote = await dao.votes(account,i)
-
       votes.push(vote)
-      items.push(proposal)
+
+      //Fetch recipients'balance
+      const recipient = proposal.recipient
+      if(!recipientsBalance.has(recipient)){
+        let balance
+        balance = (await provider.getBalance(proposal.recipient)).toString()
+        balance = ethers.utils.formatUnits(balance, 'ether')
+        recipientsBalance.set(recipient, balance)
+      }
     }
+
+    setRecipientsBalance(recipientsBalance)
     setProposals(items)
     setVotes(votes)
 
@@ -91,7 +105,7 @@ function App() {
           <hr/>
           <p className='text-center'><strong>Treasury Balance:</strong> {treasuryBalance} ETH</p>
           <hr/>
-          <Proposals provider={provider} dao={dao} proposals={proposals} quorum={quorum} votes={votes} setIsLoading={setIsLoading}  />
+          <Proposals provider={provider} dao={dao} proposals={proposals} quorum={quorum} votes={votes} recipientBalance={recipientsBalance} setIsLoading={setIsLoading} />
         </>
       )}
     </Container>
